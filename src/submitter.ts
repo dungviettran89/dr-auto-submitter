@@ -79,7 +79,7 @@ export class Submitter {
 
     private async submitModel({model, arn}: { model: string; arn: string }) {
         try {
-            let url = `https://console.aws.amazon.com/deepracer/home?region=us-east-1#${arn}`
+            let url = `https://console.aws.amazon.com/deepracer/home?region=us-east-1#league/${arn}`
             await this.page.goto(url, {waitUntil: 'networkidle2'});
             this.logDebug(`Loaded ${url}`)
             await this.page.waitForSelector(`div.submitModelButton awsui-button`, {timeout: 30000}).then(e => e.click());
