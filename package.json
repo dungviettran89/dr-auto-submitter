@@ -1,6 +1,6 @@
 {
   "name": "dr-auto-submit",
-  "version": "0.0.3",
+  "version": "1.0.0",
   "description": "A auto submission tool to help with Deep Racer league",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
