@@ -26,11 +26,11 @@ Options:
 1. Obtain valid a sub account with all Deep Racer permission. Follow instruction [here](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_create.html) to create a sub account.
 A valid account will consist of 3 information: account id, username and password.
 2. Train and make sure your model is in valid state to submit. 
-3. Open your league leader board and copy race arn. League arn is the value started with arn after `#/league`
+3. Open your league leader board and copy race arn. League arn is the value started with arn after `#`
 `https://console.aws.amazon.com/deepracer/home?region=us-east-1#league/arn%3Aaws%3Adeepracer%3A%3A%3Aleaderboard%2F55234c74-2c48-466d-9e66-242ddf05e04d`
-will have arn: `arn%3Aaws%3Adeepracer%3A%3A%3Aleaderboard%2F55234c74-2c48-466d-9e66-242ddf05e04d`
+will have arn: `league/arn%3Aaws%3Adeepracer%3A%3A%3Aleaderboard%2F55234c74-2c48-466d-9e66-242ddf05e04d`
 4. Make sure Chrome and Node are installed in your system.
-5. Execute commandline `npx dr-auto-submit -a <account> -u <username> -p <password> -s <model1>:<arn1> -s <model2>:<arn2>` 
+5. Execute commandline `npx dr-auto-submit -a 123411231 -u Daf123AD -p asdasd12131das -s my-model:league/arn%3Aaws%3Adeepracer%3A%3A%3Aleaderboard%2F55234c74-2c48-466d-9e66-242ddf05e04d` 
 
 ## Installation on Linux
 Install Chromium
