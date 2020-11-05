@@ -1,6 +1,6 @@
 # dr-auto-submit
 
-A node based DeepRacer league submitter, this will help you auto sumit your model every 10 seconds
+A node based DeepRacer league submitter, this will help you  submit your model automatically every 10 seconds
 
 # Usage
 
