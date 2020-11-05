@@ -4,7 +4,7 @@ export class Submitter {
     account: string;
     username: string;
     password: string;
-    submissions: { model: string, arn: string }[];
+    submissions: { model: string, hash: string }[];
     headless: boolean;
     debug: string;
     executable: string;
@@ -77,9 +77,9 @@ export class Submitter {
         if (this.debug) console.log(message, ...args)
     }
 
-    private async submitModel({model, arn}: { model: string; arn: string }) {
+    private async submitModel({model, hash}: { model: string; hash: string }) {
         try {
-            let url = `https://console.aws.amazon.com/deepracer/home?region=us-east-1#league/${arn}`
+            let url = `https://console.aws.amazon.com/deepracer/home?region=us-east-1#${hash}`
             await this.page.goto(url, {waitUntil: 'networkidle2'});
             this.logDebug(`Loaded ${url}`)
             await this.page.waitForSelector(`div.submitModelButton awsui-button`, {timeout: 30000}).then(e => e.click());
@@ -93,7 +93,7 @@ export class Submitter {
             this.logDebug(`Submitted ${model}`)
             await this.wait(1000)
             await this.page.goto(url, {waitUntil: 'networkidle2'});
-            console.log(`Submitted ${model} to ${arn}`);
+            console.log(`Submitted ${model} to ${hash}`);
         } catch (e) {
             console.log(`Skipped submission of ${model} due to model not found or evaluation in progress`)
             this.logDebug(`Failed to submit ${model}`, e);
