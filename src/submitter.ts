@@ -79,6 +79,8 @@ export class Submitter {
 
     private async submitModel({model, hash}: { model: string; hash: string }) {
         try {
+            await this.page.goto(`https://console.aws.amazon.com/console/home?region=us-east-1`, {waitUntil: 'networkidle2'});
+            this.logDebug('Loaded ', `https://console.aws.amazon.com/console/home?region=us-east-1`);
             let url = `https://console.aws.amazon.com/deepracer/home?region=us-east-1#${hash}`
             await this.page.goto(url, {waitUntil: 'networkidle2'});
             this.logDebug(`Loaded ${url}`)
