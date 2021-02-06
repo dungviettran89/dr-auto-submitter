@@ -9,7 +9,6 @@
     "prebuild": "rimraf lib",
     "build": "tsc --declaration",
     "start": "ts-node src/index.ts",
-    "prepakage": "npm run build",
     "prepublishOnly": "npm run build",
     "release:rc": "npm version prepatch --no-git-tag-version && npm publish --tag=next --access public",
     "release:minor": "npm version minor && npm publish --tag=latest --access public",

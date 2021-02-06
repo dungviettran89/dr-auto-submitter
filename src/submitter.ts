@@ -51,6 +51,7 @@ export class Submitter {
             if (!await this.page.$(`div.home-content`)) {
                 console.log('User is not logged in. Performing authentication')
                 await this.page.goto(`https://${this.account}.signin.aws.amazon.com/console`, {waitUntil: 'networkidle2'});
+                await this.page.$('#account').then(e => e.type(this.account, {delay: 50}))
                 await this.page.$('#username').then(e => e.type(this.username, {delay: 50}))
                 await this.page.$('#password').then(e => e.type(this.password, {delay: 50}))
                 await this.page.$('#signin_button').then(e => e.click())

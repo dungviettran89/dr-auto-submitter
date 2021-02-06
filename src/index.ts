@@ -18,7 +18,6 @@ import {Submitter} from "./submitter";
         .option('-d, --debug', 'Enable debug')
         .option('--no-headless', 'Disable headless mode')
         .helpOption('-h, --help', 'Read more information');
-    ;
     program.parse(process.argv);
     let options: any = program.opts();
     let {account, username, password, submit, headless, debug, executable} = options;
