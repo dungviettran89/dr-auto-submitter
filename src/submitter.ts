@@ -86,6 +86,17 @@ export class Submitter {
             let url = `https://console.aws.amazon.com/deepracer/home?region=us-east-1#${hash}`
             await this.page.goto(url, {waitUntil: 'networkidle2'});
             this.logDebug(`Loaded ${url}`)
+            let dismissButtons = await this.page.$$(`awsui-modal[id] awsui-button.awsui-modal-dismiss-control`);
+            if (dismissButtons.length > 0) {
+                this.logDebug(`Dismissing modal dialog`)
+                for (let dismissButton of dismissButtons) {
+                    try {
+                        await dismissButton.click()
+                    } catch (e) {
+                        //ignore
+                    }
+                }
+            }
             await this.page.waitForSelector(`div.submitModelButton awsui-button`, {timeout: 30000}).then(e => e.click());
             this.logDebug(`Clicked Race button`)
             await this.page.waitForSelector('awsui-select', {timeout: 5000}).then(e => e.click())
@@ -102,6 +113,6 @@ export class Submitter {
             console.log(`Skipped submission of ${model} due to model not found or evaluation in progress`)
             this.logDebug(`Failed to submit ${model}`, e);
         }
-        await this.wait(5000);
+        await this.wait(this.debug ? 300000 : 5000);
     }
 }
