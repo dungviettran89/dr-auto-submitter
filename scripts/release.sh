@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 npm version ${1:-patch}
 VERSION=$(awk '/version/{gsub(/("|",)/,"",$2);print $2}' package.json)
 echo "Building version $VERSION"
