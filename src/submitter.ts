@@ -1,4 +1,4 @@
-import puppeteer, {Browser, Page} from "puppeteer-core";
+import puppeteer, {Browser, Page} from "puppeteer";
 
 export class Submitter {
     account: string;
@@ -11,18 +11,24 @@ export class Submitter {
     browser: Browser;
     page: Page;
 
+    rewardDismissed: boolean;
+
     constructor(init: Partial<Submitter>) {
         Object.assign(this, init);
     }
 
     async submit() {
-        await this.initialize();
-        while (true) {
-            await this.validateAuthentication();
-            for (let i = 0; i < this.submissions.length; i++) {
-                await this.submitModel(this.submissions[i])
+        try {
+            await this.initialize();
+            while (true) {
+                await this.validateAuthentication();
+                for (let i = 0; i < this.submissions.length; i++) {
+                    await this.submitModel(this.submissions[i])
+                }
+                await this.wait(10000)
             }
-            await this.wait(10000)
+        } catch (e) {
+            console.log(`Cannot start puppeteer with error`, e)
         }
     }
 
@@ -30,6 +36,8 @@ export class Submitter {
         this.browser = await puppeteer.launch({
             defaultViewport: null,
             args: [
+                `--no-zygote`,
+                `--single-process`,
                 `--no-sandbox`,
                 `--disable-setuid-sandbox`,
                 '--ignore-certificate-errors',
@@ -81,12 +89,21 @@ export class Submitter {
 
     private async submitModel({model, hash}: { model: string; hash: string }) {
         try {
-            await this.page.goto(`https://console.aws.amazon.com/console/home?region=us-east-1`, {waitUntil: 'networkidle2'});
-            this.logDebug('Loaded ', `https://console.aws.amazon.com/console/home?region=us-east-1`);
             let url = `https://console.aws.amazon.com/deepracer/home?region=us-east-1#${hash}`
-            await this.page.goto(url, {waitUntil: 'networkidle2'});
             this.logDebug(`Loaded ${url}`)
-            await this.page.waitForSelector(`div.submitModelButton awsui-button`, {timeout: 30000}).then(e => e.click());
+            if (!this.rewardDismissed) {
+                try {
+                    await this.page.goto('https://us-east-1.console.aws.amazon.com/deepracer/home?region=us-east-1#racerProfile', {waitUntil: 'networkidle2'});
+                    await this.page.waitForSelector('awsui-button.awsui-modal-dismiss-control', {timeout: 300000}).then(e => e.click())
+                    this.logDebug(`Dismissed reward modal`);
+                } catch (e) {
+                    console.log(`Cannot dismiss reward modal. Maybe it is already dismissed.`,e)
+                } finally {
+                    this.rewardDismissed = true;
+                }
+            }
+            await this.page.goto(url, {waitUntil: 'networkidle2'});
+            await this.page.waitForSelector(`div.submitModelButton awsui-button`, {timeout: 300000}).then(e => e.click());
             this.logDebug(`Clicked Race button`)
             await this.page.waitForSelector('awsui-select', {timeout: 5000}).then(e => e.click())
             this.logDebug(`Expanded select`)
@@ -96,7 +113,6 @@ export class Submitter {
             await this.page.waitForSelector(`button.awsui-button-variant-primary`).then(e => e.click())
             this.logDebug(`Submitted ${model}`)
             await this.wait(1000)
-            await this.page.goto(url, {waitUntil: 'networkidle2'});
             console.log(`Submitted ${model} to ${hash}`);
         } catch (e) {
             console.log(`Skipped submission of ${model} due to model not found or evaluation in progress`)

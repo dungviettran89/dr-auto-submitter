@@ -10,10 +10,10 @@
     "build": "tsc --declaration",
     "start": "ts-node src/index.ts",
     "prepublishOnly": "npm run build",
-    "release:rc": "npm version prepatch --no-git-tag-version && npm publish --tag=next --access public",
-    "release:patch": "npm version patch && npm publish --tag=latest --access public",
-    "release:minor": "npm version minor && npm publish --tag=latest --access public",
-    "release:major": "npm version major && npm publish --tag=latest --access public"
+    "release:rc": "scripts/release-rc.sh",
+    "release:patch": "scripts/release.sh patch",
+    "release:minor": "scripts/release.sh minor",
+    "release:major": "scripts/release.sh major"
   },
   "repository": {
     "type": "git",
@@ -32,11 +32,10 @@
   "homepage": "https://github.com/dungviettran89/dr-auto-submitter#readme",
   "dependencies": {
     "commander": "^6.2.1",
-    "puppeteer-core": "^5.5.0"
+    "puppeteer": "^14.2.1"
   },
   "devDependencies": {
     "@types/node": "^14.14.34",
-    "@types/puppeteer-core": "^2.1.0",
     "pkg": "^4.4.9",
     "rimraf": "^3.0.2",
     "ts-node": "^9.1.1",
