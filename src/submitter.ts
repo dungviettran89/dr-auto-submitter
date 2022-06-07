@@ -1,5 +1,7 @@
 import puppeteer, {Browser, Page} from "puppeteer";
 
+const MAX_RETRIES = 3;
+
 export class Submitter {
     account: string;
     username: string;
@@ -20,13 +22,21 @@ export class Submitter {
     async submit() {
         try {
             await this.initialize();
-            while (true) {
-                await this.validateAuthentication();
-                for (let i = 0; i < this.submissions.length; i++) {
-                    await this.submitModel(this.submissions[i])
+            let retry: number = 0;
+            while (retry < MAX_RETRIES) {
+                if (await this.tryToAuthenticate()) {
+                    retry = 0;
+                    for (let i = 0; i < this.submissions.length; i++) {
+                        await this.submitModel(this.submissions[i])
+                    }
+                    await this.wait(10000);
+                } else {
+                    retry++;
+                    console.log(`Failed to authenticate, will quit after ${MAX_RETRIES - retry} retries.`)
                 }
-                await this.wait(10000)
             }
+            await this.browser.close();
+            process.exit();
         } catch (e) {
             console.log(`Cannot start puppeteer with error`, e)
         }
@@ -52,11 +62,11 @@ export class Submitter {
         this.page = await this.browser.pages().then(p => p[0]);
     }
 
-    private async validateAuthentication() {
+    private async tryToAuthenticate() {
         try {
-            await this.page.goto(`https://console.aws.amazon.com/console/home?region=us-east-1`, {waitUntil: 'networkidle2'});
-            this.logDebug('Loaded ', `https://console.aws.amazon.com/console/home?region=us-east-1`);
-            if (!await this.page.$(`div.home-content`)) {
+            await this.page.goto(`https://us-east-1.console.aws.amazon.com/deepracer/home?region=us-east-1#racerProfile`, {waitUntil: 'networkidle2'});
+            this.logDebug('Loaded ', `https://us-east-1.console.aws.amazon.com/deepracer/home?region=us-east-1#racerProfile`);
+            if (!await this.checkElementExists(`#nav-usernameMenu`)) {
                 console.log('User is not logged in. Performing authentication')
                 await this.page.goto(`https://${this.account}.signin.aws.amazon.com/console`, {waitUntil: 'networkidle2'});
                 await this.page.$eval('#account', el => (el as any).value = '');
@@ -66,16 +76,26 @@ export class Submitter {
                 await this.page.$('#signin_button').then(e => e.click())
                 this.logDebug('Clicked on sign in button.');
                 await this.wait(5000);
-                if (!await this.page.$(`div.home-content`)) {
+                if (!await this.checkElementExists(`#nav-usernameMenu`, 30000)) {
                     console.log(`Cannot login. Invalid username or password.`)
-                    process.exit(1);
+                    return false;
                 }
-                console.log(`Logged in.`)
             }
+            console.log(`Logged in.`)
+            return true;
         } catch (e) {
             console.log(`Cannot login. Wrong account Id.`)
             this.logDebug(`Failed to login to account ${this.account} and username ${this.username}`, e);
-            process.exit(1);
+            return false;
+        }
+    }
+
+    private async checkElementExists(selector: string, timeout: number = 5000) {
+        try {
+            await this.page.waitForSelector(selector, {timeout});
+            return true;
+        } catch (e) {
+            return false;
         }
     }
 
@@ -90,19 +110,20 @@ export class Submitter {
     private async submitModel({model, hash}: { model: string; hash: string }) {
         try {
             let url = `https://console.aws.amazon.com/deepracer/home?region=us-east-1#${hash}`
-            this.logDebug(`Loaded ${url}`)
             if (!this.rewardDismissed) {
                 try {
+                    this.logDebug(`Dismissing reward modal.`);
                     await this.page.goto('https://us-east-1.console.aws.amazon.com/deepracer/home?region=us-east-1#racerProfile', {waitUntil: 'networkidle2'});
-                    await this.page.waitForSelector('awsui-button.awsui-modal-dismiss-control', {timeout: 300000}).then(e => e.click())
-                    this.logDebug(`Dismissed reward modal`);
+                    await this.page.waitForSelector('awsui-button.awsui-modal-dismiss-control', {timeout: 30000}).then(e => e.click())
+                    this.logDebug(`Dismissed reward modal.`);
                 } catch (e) {
-                    console.log(`Cannot dismiss reward modal. Maybe it is already dismissed.`,e)
+                    console.log(`Cannot dismiss reward modal. Maybe it is already dismissed.`, e)
                 } finally {
                     this.rewardDismissed = true;
                 }
             }
             await this.page.goto(url, {waitUntil: 'networkidle2'});
+            this.logDebug(`Loaded ${url}`)
             await this.page.waitForSelector(`div.submitModelButton awsui-button`, {timeout: 300000}).then(e => e.click());
             this.logDebug(`Clicked Race button`)
             await this.page.waitForSelector('awsui-select', {timeout: 5000}).then(e => e.click())
