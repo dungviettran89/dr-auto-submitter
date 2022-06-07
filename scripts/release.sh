@@ -8,4 +8,5 @@ docker push dungviettran89/dr-auto-submit:$VERSION
 docker tag dungviettran89/dr-auto-submit:$VERSION dungviettran89/dr-auto-submit:latest
 docker push dungviettran89/dr-auto-submit:latest
 npm publish --tag=latest --access public
+git push
 git push --tags
