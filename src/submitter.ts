@@ -114,7 +114,7 @@ export class Submitter {
                 try {
                     this.logDebug(`Dismissing reward modal.`);
                     await this.page.goto('https://us-east-1.console.aws.amazon.com/deepracer/home?region=us-east-1#racerProfile', {waitUntil: 'networkidle2'});
-                    await this.page.waitForSelector('awsui-button.awsui-modal-dismiss-control', {timeout: 30000}).then(e => e.click())
+                    await this.page.waitForSelector('awsui-button.awsui-modal-dismiss-control', {timeout: 10000}).then(e => e.click())
                     this.logDebug(`Dismissed reward modal.`);
                 } catch (e) {
                     console.log(`Cannot dismiss reward modal. Maybe it is already dismissed.`, e)
@@ -123,17 +123,17 @@ export class Submitter {
                 }
             }
             await this.page.goto(url, {waitUntil: 'networkidle2'});
-            this.logDebug(`Loaded ${url}`)
-            await this.page.waitForSelector(`div.submitModelButton awsui-button`, {timeout: 300000}).then(e => e.click());
-            this.logDebug(`Clicked Race button`)
-            await this.page.waitForSelector('awsui-select', {timeout: 5000}).then(e => e.click())
-            this.logDebug(`Expanded select`)
-            await this.page.waitForSelector(`div[title=${model}]`).then(e => e.click())
-            this.logDebug(`Selected ${model}`)
-            await this.wait(1000)
-            await this.page.waitForSelector(`button.awsui-button-variant-primary`).then(e => e.click())
-            this.logDebug(`Submitted ${model}`)
-            await this.wait(1000)
+            this.logDebug(`Loaded ${url}`);
+            await this.page.waitForXPath(`//button[contains(., 'Race again')]`, {timeout: 30000}).then(e => e.click());
+            this.logDebug(`Clicked Race button`);
+            await this.page.waitForXPath("//button[contains(., 'model')]", {timeout: 5000}).then(e => e.click());
+            this.logDebug(`Expanded select`);
+            await this.page.waitForXPath(`//li[contains(., '${model}')]`).then(e => e.click());
+            this.logDebug(`Selected ${model}`);
+            await this.wait(1000);
+            await this.page.waitForXPath(`//button[contains(., 'Enter race')]`, {timeout: 30000}).then(e => e.click());
+            this.logDebug(`Submitted ${model}`);
+            await this.wait(1000);
             console.log(`Submitted ${model} to ${hash}`);
         } catch (e) {
             console.log(`Skipped submission of ${model} due to model not found or evaluation in progress`)
