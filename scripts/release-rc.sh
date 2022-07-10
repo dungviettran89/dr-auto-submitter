@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+docker build .
 npm version prepatch --no-git-tag-version
 VERSION=$(awk '/version/{gsub(/("|",)/,"",$2);print $2}' package.json)
 echo "Building version $VERSION"
